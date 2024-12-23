@@ -11,7 +11,7 @@ model = GPT4All(MODEL, device = "cpu") # downloads / loads a 4.66GB LLM
 
 # Define your system prompt
 
-@app.route('/risk-assessment', methods=['POST'])
+@app.route('/query', methods=['POST'])
 def risk_assessment_model():
     try:
         # Parse the JSON payload from the POST request
@@ -35,7 +35,7 @@ def risk_assessment_model():
             with model.chat_session(system_prompt=system_prompt) as session:
                 response = session.generate(prompt, max_tokens=100)
         else:
-            with model.chat_session(base_risk_assessment_system_prompt) as session:
+            with model.chat_session() as session:
                 response = session.generate(prompt, max_tokens=100)
 
         # Return the generated response as JSON
