@@ -16,6 +16,7 @@ model = GPT4All(MODEL, device = "cpu") # downloads / loads a 4.66GB LLM
 @app.route('/query', methods=['POST'])
 def risk_assessment_model():
     try:
+        max_tokens = int(os.environ.get('MAX_TOKENS',8000))
         # Parse the JSON payload from the POST request
         data = request.get_json()
 
@@ -30,10 +31,10 @@ def risk_assessment_model():
         # Start a chat session with or without a system prompt
         if system_prompt:
             with model.chat_session(system_prompt=system_prompt) as session:
-                response = session.generate(prompt, max_tokens=100)
+                response = session.generate(prompt, max_tokens=max_tokens)
         else:
             with model.chat_session() as session:
-                response = session.generate(prompt, max_tokens=100)
+                response = session.generate(prompt, max_tokens=max_tokens)
 
         # Return the generated response as JSON
         return jsonify({"response": response})
