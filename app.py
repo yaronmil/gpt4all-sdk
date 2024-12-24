@@ -2,10 +2,12 @@ import os
 from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from gpt4all import GPT4All
+from flask_cors import CORS
 
 load_dotenv()
 
 app = Flask(__name__)
+CORS(app)
 MODEL=os.getenv('MODEL_NAME', 200)
 model = GPT4All(MODEL, device = "cpu") # downloads / loads a 4.66GB LLM
 
