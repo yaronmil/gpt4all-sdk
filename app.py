@@ -3,9 +3,28 @@ from dotenv import load_dotenv
 from flask import Flask, request, jsonify
 from gpt4all import GPT4All
 from flask_cors import CORS
+from rabbitmq import RabbitMQ
+import json
+ 
+
+def callback(ch, method, properties, body):
+    print(f"Received message: {body}")
+def publish_message(msg):
+    try:
+        rabbitmq = RabbitMQ();
+        rabbitmq.publish(queue_name='riskAssessmentAnalyzeComplete', message=json.dumps(msg))
+        print("Test message published successfully.")
+    except Exception as e:
+        print(f"Failed to publish test message: {e}")
+    
+def main():
+    try:
+        rabbitmq = RabbitMQ();
+        rabbitmq.consume(queue_name='riskAssessmentAnalyze', callback=callback)
+    except Exception as e:
+        print(f"Failed to establish connection to RabbitMQ: {e}")
 
 load_dotenv()
-
 app = Flask(__name__)
 CORS(app)
 MODEL=os.environ.get('MODEL_NAME')
@@ -42,6 +61,9 @@ def risk_assessment_model():
         return jsonify({"error": str(e)}), 500
 
 if __name__ == '__main__':
+    main()
+    # publish_message({'yar':'1'})
+    # publish_message({'yar':'2'})
     port = int(os.environ.get('PORT',8000))
     app.run(host='0.0.0.0', port= port,debug=False)
 
