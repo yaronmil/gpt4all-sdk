@@ -8,10 +8,13 @@ import json
  
 
 def callback(ch, method, properties, body):
-    print(f"Received message: {body}")
+    aaa=json.loads(body)
+    retVal=consaultAi(aaa)
+    newMessage={'id':aaa.get('id'),'response':retVal}
+    return publish_message(newMessage)
 def publish_message(msg):
     try:
-        rabbitmq = RabbitMQ();
+        rabbitmq = RabbitMQ()
         rabbitmq.publish(queue_name='riskAssessmentAnalyzeComplete', message=json.dumps(msg))
         print("Test message published successfully.")
     except Exception as e:
@@ -35,30 +38,30 @@ model = GPT4All(MODEL, device = "cpu") # downloads / loads a 4.66GB LLM
 @app.route('/query', methods=['POST'])
 def risk_assessment_model():
     try:
-        max_tokens = int(os.environ.get('MAX_TOKENS',8000))
-        # Parse the JSON payload from the POST request
         data = request.get_json()
-
-        # Validate the 'prompt' field (mandatory)
-        prompt = data.get("prompt")
-        if not prompt:
+        response=consaultAi(data)
+        if not response:
             return jsonify({"error": "The 'prompt' field is required"}), 400
-
-        # Get the 'system_prompt' field (optional) 
-        system_prompt = data.get("system_prompt", None)
-
-        # Start a chat session with or without a system prompt
-        if system_prompt:
-            with model.chat_session(system_prompt=system_prompt) as session:
-                response = session.generate(prompt, max_tokens=max_tokens)
-        else:
-            with model.chat_session() as session:
-                response = session.generate(prompt, max_tokens=max_tokens)
-
-        # Return the generated response as JSON
+       
         return jsonify({"response": response})
     except Exception as e:
         return jsonify({"error": str(e)}), 500
+
+def consaultAi(data):
+    max_tokens = int(os.environ.get('MAX_TOKENS',8000))
+    prompt = data.get('prompt')
+    system_prompt = data.get('system_prompt')
+    if not prompt:
+       return None
+    
+    if system_prompt:
+            with model.chat_session(system_prompt=system_prompt) as session:
+                response = session.generate(prompt, max_tokens=max_tokens)
+    else:
+            with model.chat_session() as session:
+                response = session.generate(prompt, max_tokens=max_tokens)
+              
+    return response
 
 if __name__ == '__main__':
     main()
