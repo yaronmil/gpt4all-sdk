@@ -15,7 +15,7 @@ class apiServer:
     def risk_assessment_model(self ):
         try:
             data = request.get_json()
-            response=self.aiModel.consultAi(data)
+            response=self.aiModel.consultAi(data,True)
             if not response:
                 return jsonify({"error": "The 'prompt' field is required"}), 400
         

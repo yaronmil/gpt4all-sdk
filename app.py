@@ -1,12 +1,12 @@
 from threading import Thread
 from dotenv import load_dotenv
-from controller import apiServer
-from gpt4all_client import gpt4AllClient
+from api_server import apiServer
+from ai_client import aiClient
 from risk_assessment_worker import RiskAssessmentWorker
 load_dotenv()
 
-aiModel=gpt4AllClient()
-serverThread = Thread(target=apiServer,args=(aiModel,))
+aiModel=aiClient()
+serverThread = Thread(target=apiServer,args=(aiModel,),daemon=True)
 serverThread.start()
 worker = RiskAssessmentWorker(aiModel=aiModel)
 

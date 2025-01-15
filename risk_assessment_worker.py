@@ -25,8 +25,7 @@ class RiskAssessmentWorker:
         self.connection = None
         self.channel = None
         
-        self.start()
-        #self.connect()
+        self.connect()
 
     def connect(self):
         """Establish connection to RabbitMQ and declare the queue."""
@@ -43,12 +42,9 @@ class RiskAssessmentWorker:
         print("Connected to RabbitMQ. Listening on queue: risk_assessment")
         self.channel.basic_consume(queue='risk_assessment', on_message_callback=self.callback)
         self.channel.start_consuming()
-
-    def long_running_task(self, data):
-        """Simulate a long-running task."""
-        print(f"Processing task: {data}")
-        time.sleep(5)  # Simulate processing
-        return {"result": f"Processed {data['params']['number']}"}
+        self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.on_message)
+        print("Waiting for RPC requests...")
+        self.channel.start_consuming()
 
     def on_message(self, ch, method, properties, body):
         """Handle incoming messages."""
@@ -71,13 +67,6 @@ class RiskAssessmentWorker:
 
         # Acknowledge the request message
         ch.basic_ack(delivery_tag=method.delivery_tag)
-
-    def start(self):
-        """Start consuming messages."""
-        self.connect()
-        self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.on_message)
-        print("Waiting for RPC requests...")
-        self.channel.start_consuming()
 
     def stop(self):
         """Clean up resources."""
