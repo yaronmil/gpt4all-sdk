@@ -29,7 +29,6 @@ PyScreeze==1.0.1
 pytest==8.3.4
 python-dotenv==1.0.1
 pytweening==1.2.0
-pywin32==308
 requests==2.32.3
 setuptools==75.6.0
 tqdm==4.67.1

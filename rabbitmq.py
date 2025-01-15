@@ -14,7 +14,10 @@ class RabbitMQ:
 
     def connect(self):
         credentials = pika.PlainCredentials(self.user, self.password)
-        parameters = pika.ConnectionParameters(host=self.host, port=self.port, credentials=credentials)
+        parameters = pika.ConnectionParameters(host=self.host, port=self.port, credentials=credentials,  client_properties={
+        'connection_name': 'gpt4all',
+        'custom_property': 'value'
+    } )
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
 
@@ -25,7 +28,7 @@ class RabbitMQ:
     def consume(self, queue_name, callback):
         if not self.channel:
             raise Exception("Connection is not established.")
-        self.channel.basic_consume(queue=queue_name, on_message_callback=callback, auto_ack=True)
+        self.channel.basic_consume(queue=queue_name, on_message_callback=callback,consumer_tag="aaa")
         consumer_thread = threading.Thread(target= self.channel.start_consuming)
         consumer_thread.start()
         # self.channel.start_consuming()
