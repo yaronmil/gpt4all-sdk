@@ -19,9 +19,9 @@ class RiskAssessmentWorker:
     def __init__(self,aiModel):
         self.aiModel=aiModel
         self.user = os.getenv('RABBITMQ_USER', 'user')
-        self.password = os.getenv('RABBITMQ_PASSWORD', 'pass')
+        self.password = os.getenv('RABBITMQ_PASS', 'pass')
         self.host = os.getenv('RABBITMQ_HOST', 'localhost')
-        self.port = int(os.getenv('RABBITMQ_PORT', 5672))
+        self.port = int(os.getenv('RABBITMQ_PORT'))
         self.connection = None
         self.channel = None
         
