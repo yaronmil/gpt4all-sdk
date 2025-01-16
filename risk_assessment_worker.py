@@ -24,8 +24,14 @@ class RiskAssessmentWorker:
         self.port = int(os.getenv('RABBITMQ_PORT'))
         self.connection = None
         self.channel = None
-        
-        self.connect()
+        while True:
+            try:
+                print("trying to connect to rabbit")
+                self.connect()
+            except:
+                print("connecting to rabbit failed")
+                time.sleep(5)
+                continue
 
     def connect(self):
         """Establish connection to RabbitMQ and declare the queue."""
@@ -34,8 +40,9 @@ class RiskAssessmentWorker:
         parameters = pika.ConnectionParameters(host=self.host, port=self.port, credentials=credentials,  client_properties={
         'connection_name': 'gpt4all',
         'custom_property': 'value123'
-    } )
+        } )
 
+ 
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue="risk_assessment",durable=True)
@@ -45,6 +52,7 @@ class RiskAssessmentWorker:
         self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.on_message)
         print("Waiting for RPC requests...")
         self.channel.start_consuming()
+    
 
     def on_message(self, ch, method, properties, body):
         """Handle incoming messages."""
