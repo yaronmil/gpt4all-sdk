@@ -1,4 +1,4 @@
-mock={
+risk_assessmnet_mock_rsponse={
     'riskScore':115550,
     'riskAreas':[
         {

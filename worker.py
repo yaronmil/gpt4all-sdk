@@ -3,19 +3,31 @@ import json
 import time
 import os
 
-class RiskAssessmentWorker:
-    def callback(self,ch, method, properties, body):
+class Worker:
+    def risk_assessment_cb(self,ch, method, properties, body):
         prompts=json.loads(body)
         taskId=prompts.get('taskId')
-        print(f"start analyzing task {taskId}")
-        retVal=self.aiModel.consultAi(prompts)
+        print(f"start analyzing risk_assessment {taskId}")
+        retVal=self.aiModel.consultAi(prompts,True)
         newMessage={'taskId':taskId,'response':retVal}
         try:
-            self.publish("risk_assessment_response",method,newMessage)
+            self.publish("risk_assessment_ai_response",method,newMessage)
             ch.basic_ack(delivery_tag=method.delivery_tag)
         except Exception as e:
             print(f"Failed to publish {taskId} {e}")
-    
+
+    def sec_req_cb(self,ch, method, properties, body):
+        prompts=json.loads(body)
+        taskId=prompts.get('taskId')
+        print(f"start analyzing sec_req {taskId}")
+        retVal=self.aiModel.consultAi(prompts,False)
+        newMessage={'taskId':taskId,'response':retVal}
+        try:
+            self.publish("define_security_requirements_ai_response",method,newMessage)
+            ch.basic_ack(delivery_tag=method.delivery_tag)
+        except Exception as e:
+            print(f"Failed to publish {taskId} {e}")
+
     def __init__(self,aiModel):
         self.aiModel=aiModel
         self.user = os.getenv('RABBITMQ_USER', 'user')
@@ -46,12 +58,12 @@ class RiskAssessmentWorker:
         self.connection = pika.BlockingConnection(parameters)
         self.channel = self.connection.channel()
         self.channel.queue_declare(queue="risk_assessment",durable=True)
-        print("Connected to RabbitMQ. Listening on queue: risk_assessment")
-        self.channel.basic_consume(queue='risk_assessment', on_message_callback=self.callback)
+        self.channel.queue_declare(queue="define_security_requirements",durable=True)
+        print("Connected to RabbitMQ. Listening on queue: risk_assessment,define_seq_req")
+        self.channel.basic_consume(queue='risk_assessment', on_message_callback=self.risk_assessment_cb)
+        self.channel.basic_consume(queue='define_security_requirements', on_message_callback=self.sec_req_cb)
         self.channel.start_consuming()
-        self.channel.basic_consume(queue=self.queue_name, on_message_callback=self.on_message)
         print("Waiting for RPC requests...")
-        self.channel.start_consuming()
     
 
     def on_message(self, ch, method, properties, body):
