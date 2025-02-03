@@ -3,6 +3,8 @@ import json
 import time
 import os
 
+from ai_client import aiClient
+
 class Worker:
     def risk_assessment_cb(self,ch, method, properties, body):
         prompts=json.loads(body)
@@ -28,7 +30,7 @@ class Worker:
         except Exception as e:
             print(f"Failed to publish {taskId} {e}")
 
-    def __init__(self,aiModel):
+    def __init__(self,aiModel:aiClient):
         self.aiModel=aiModel
         self.user = os.getenv('RABBITMQ_USER', 'user')
         self.password = os.getenv('RABBITMQ_PASS', 'pass')

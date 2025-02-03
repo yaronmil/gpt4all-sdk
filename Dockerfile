@@ -19,7 +19,7 @@ RUN apt-get update && apt-get install -y \
 RUN pip install --upgrade pip setuptools wheel
 
 # Install llama-cpp-python
-RUN pip install llama-cpp-python
+RUN pip install --no-cache-dir llama-cpp-python==0.2.85 --extra-index-url https://abetlen.github.io/llama-cpp-python/whl/cu122
 RUN pip install --no-cache-dir -r requirements.txt
 
 # Copy the rest of the application code into the container
