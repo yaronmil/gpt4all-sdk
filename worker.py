@@ -3,9 +3,27 @@ import json
 import time
 import os
 
-from ai_client import aiClient
+from gpt4allClient  import Gpt4AllClient
+import llmRunnerInterface
 
 class Worker:
+    def __init__(self,aiModel:llmRunnerInterface):
+        self.aiModel=aiModel
+        self.user = os.getenv('RABBITMQ_USER', 'user')
+        self.password = os.getenv('RABBITMQ_PASS', 'pass')
+        self.host = os.getenv('RABBITMQ_HOST', 'localhost')
+        self.port = int(os.getenv('RABBITMQ_PORT'))
+        self.connection = None
+        self.channel = None
+        while True:
+            try:
+                print("trying to connect to rabbit")
+                self.connect()
+            except:
+                print("connecting to rabbit failed")
+                time.sleep(5)
+                continue
+
     def risk_assessment_cb(self,ch, method, properties, body):
         prompts=json.loads(body)
         taskId=prompts.get('taskId')
@@ -30,22 +48,7 @@ class Worker:
         except Exception as e:
             print(f"Failed to publish {taskId} {e}")
 
-    def __init__(self,aiModel:aiClient):
-        self.aiModel=aiModel
-        self.user = os.getenv('RABBITMQ_USER', 'user')
-        self.password = os.getenv('RABBITMQ_PASS', 'pass')
-        self.host = os.getenv('RABBITMQ_HOST', 'localhost')
-        self.port = int(os.getenv('RABBITMQ_PORT'))
-        self.connection = None
-        self.channel = None
-        while True:
-            try:
-                print("trying to connect to rabbit")
-                self.connect()
-            except:
-                print("connecting to rabbit failed")
-                time.sleep(5)
-                continue
+   
 
     def connect(self):
         """Establish connection to RabbitMQ and declare the queue."""

@@ -1,9 +1,10 @@
 from gpt4all import GPT4All
 import os
 import time
+from llmRunnerInterface import LlmRunnerInterface
 from risk_assessment_mock_data import risk_assessmnet_mock_rsponse
 risk_assessment_mock_response= [123643, 123644, 123645]
-class aiClient:
+class Gpt4AllClient(LlmRunnerInterface):
      def __init__(self):
           model_name=os.environ.get('MODEL_NAME')
           self.model = GPT4All(model_name, device = "cpu")
